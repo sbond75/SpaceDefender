@@ -289,10 +289,11 @@ class Vehicle : ScriptObject
         CollisionShape@ hullShape = node.CreateComponent("CollisionShape");
 
         node.scale = Vector3(1.5f, 1.0f, 3.0f);
-        hullObject.model = cache.GetResource("Model", "Models/Box.mdl");
+        hullObject.model = cache.GetResource("Model", "Models/Cylinder.mdl");
         hullObject.material = cache.GetResource("Material", "Materials/Stone.xml");
         hullObject.castShadows = true;
-        hullShape.SetBox(Vector3::ONE);
+	BoundingBox bbox = hullObject.boundingBox;
+        hullShape.SetCylinder(bbox.size.x, bbox.size.y);
         hullBody.mass = 4.0f;
         hullBody.linearDamping = 0.2f; // Some air resistance
         hullBody.angularDamping = 0.5f;
@@ -352,14 +353,16 @@ class Vehicle : ScriptObject
         float newSteering = 0.0f;
         float accelerator = 0.0f;
 
+	const float ACCEL = 3.0f;
+	const float TURN_ACCEL = 1.0f;
         if (controls.IsDown(CTRL_LEFT))
-            newSteering = -1.0f;
+            newSteering = -TURN_ACCEL;
         if (controls.IsDown(CTRL_RIGHT))
-            newSteering = 1.0f;
+            newSteering = TURN_ACCEL;
         if (controls.IsDown(CTRL_FORWARD))
-            accelerator = 1.0f;
+            accelerator = ACCEL;
         if (controls.IsDown(CTRL_BACK))
-            accelerator = -0.5f;
+            accelerator = -1.0f;
 
         // When steering, wake up the wheel rigidbodies so that their orientation is updated
         if (newSteering != 0.0f)
@@ -388,8 +391,8 @@ class Vehicle : ScriptObject
         }
 
         // Apply downforce proportional to velocity
-        Vector3 localVelocity = hullBody.rotation.Inverse() * hullBody.linearVelocity;
-        hullBody.ApplyForce(hullBody.rotation * Vector3::DOWN * Abs(localVelocity.z) * DOWN_FORCE);
+        //Vector3 localVelocity = hullBody.rotation.Inverse() * hullBody.linearVelocity;
+        //hullBody.ApplyForce(hullBody.rotation * Vector3::DOWN * Abs(localVelocity.z) * DOWN_FORCE);
     }
 }
 
